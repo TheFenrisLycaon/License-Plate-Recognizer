@@ -1,0 +1,8 @@
+opencv-python
+easyocr
+imutils
+numpy
+pandas
+requests
+flask
+matplotlib
