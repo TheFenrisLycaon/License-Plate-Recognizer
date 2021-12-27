@@ -10,6 +10,7 @@ import imutils
 import numpy as np
 import pandas as pd
 import requests
+import time
 from flask import Flask, Response, render_template
 from matplotlib import pyplot as plt
 
@@ -45,7 +46,7 @@ def genLink(ip, port):
     print()
     os.system("curl  http://localhost:4040/api/tunnels > Data/tunnels.json")
 
-    with open('tunnels.json') as data_file:
+    with open(r'Data\tunnels.json') as data_file:
         datajson = json.load(data_file)
 
     msg = []
@@ -67,6 +68,7 @@ def sms(number: list):
                'Content-Type': "application/x-www-form-urlencoded", 'Cache-Control': "no-cache", }
 
     response = requests.request("POST", url, data=payload, headers=headers)
+    # print(payload)
     print(response.text)
 
 
@@ -91,6 +93,7 @@ server = Process(target=app.run)
 history = ''
 firstFrame = None
 motion = False
+running = False
 
 plates = pd.DataFrame(columns=['Time', 'Plates'])
 
@@ -116,13 +119,15 @@ while True:
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
 
-    if ret == True:
-        cv2.imshow('Gray', gray)
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break
+    # NOTE : Uncomment to see input video
+    # if ret == True:
+    #     cv2.imshow('Gray', gray)
+    #     if cv2.waitKey(25) & 0xFF == ord('q'):
+    #         break
 
     # print("Waiting for motion...")
     for c in cnts:
+
         if cv2.contourArea(c) < 1000:
             motion = False
             continue
@@ -150,48 +155,50 @@ while True:
                 break
 
         mask = np.zeros(gray.shape, np.uint8)
+        try:
+            new_image = cv2.drawContours(mask, [location], 0, 255, -1)
+            new_image = cv2.bitwise_and(img, img, mask=mask)
 
-        new_image = cv2.drawContours(mask, [location], 0, 255, -1)
-        new_image = cv2.bitwise_and(img, img, mask=mask)
+            new = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
 
-        new = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
+            # NOTE : Uncomment to see the plate frame
+            # if ret == True:
+            #     cv2.imshow('Frame', new_image)
+            #     if cv2.waitKey(25) & 0xFF == ord('q'):
+            #         break
 
-        if ret == True:
-            cv2.imshow('Frame', new_image)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
+            (x, y) = np.where(mask == 255)
+            (x1, y1) = (np.min(x), np.min(y))
+            (x2, y2) = (np.max(x), np.max(y))
 
-        (x, y) = np.where(mask == 255)
-        (x1, y1) = (np.min(x), np.min(y))
-        (x2, y2) = (np.max(x), np.max(y))
+        except:
+            pass
 
         cropped_image = gray[x1:x2+1, y1:y2+1]
 
         reader = easyocr.Reader(['en'])
         result = reader.readtext(cropped_image)
-
         try:
             plate = result[0][1]
 
             print("Plate found ::\t", plate, '\n')
 
-            if plate in plate in __DATABASE__.Plate.to_string():
-                conInfo = __DATABASE__.iloc[np.where(
-                    __DATABASE__['Plate'] == plate)].Contact.to_string(index=False)
+            # if plate in plate in __DATABASE__.Plate.to_string():
+            #     conInfo = __DATABASE__.iloc[np.where(
+            #         __DATABASE__['Plate'] == plate)].Contact.to_string(index=False)
+
+            # TODO :: Converted conInfo to a list for testing and demo. Change it to string and pass thru the SMS in a list in PROD
+            conInfo = ['9445386095', '9123415629']
 
             if history != plate:
                 print("Sending...")
-                sms([conInfo])
-                app.run(debug=False, host='172.21.126.251', port=5000)
-                # app.run()
+                sms(conInfo)
+                app.run(debug=False, host='127.0.0.1', port=5000)
 
             history = result[0][1]
 
         except Exception as e:
-            print("Plate Not Found !!!")
-            print(e)
-
-    # time.sleep(10)
+            print("No Plate Found ")
 
 video.release()
 cv2.destroyAllWindows()
