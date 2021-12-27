@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import requests
 from flask import Flask, Response, render_template
-
 from private.secrets import KEY
 
 app = Flask(__name__)
@@ -98,6 +97,9 @@ plates = pd.DataFrame(columns=['Time', 'Plates'])
 print("Reading camera feed !")
 while True:
     ret, img = video.read()
+    frame = img
+    h, w, c = img.shape
+    img = img[h//5:4*h//5, w//3:2*w//3]
 
     # if ret == True:
     #     cv2.imshow('Frame', img)
@@ -116,7 +118,6 @@ while True:
     cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
-
     # NOTE : Uncomment to see input video
     if ret == True:
         cv2.imshow('Gray', gray)
@@ -126,10 +127,11 @@ while True:
     # print("Waiting for motion...")
     for c in cnts:
 
-        if cv2.contourArea(c) < 1000:
+        if cv2.contourArea(c) <= 100:
             motion = False
             continue
         else:
+            # print(cv2.contourArea(c))
             motion = True
 
     if motion:
@@ -188,7 +190,7 @@ while True:
             # TODO :: Converted conInfo to a list for testing and demo. Change it to string and pass thru the SMS in a list in PROD
             conInfo = ['9445386095', '9123415629']
 
-            if history != plate:
+            if not running:
                 print("Sending...")
                 sms(conInfo)
                 app.run(debug=False, host='127.0.0.1', port=5000)
@@ -197,7 +199,12 @@ while True:
             history = result[0][1]
 
         except Exception as e:
-            print("No Plate Found ")
+            if killDur >= 15:
+                exit()
+            elif running:
+                killDur += 1
+            else:
+                pass
 
 video.release()
 cv2.destroyAllWindows()
