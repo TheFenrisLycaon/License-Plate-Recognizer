@@ -90,7 +90,7 @@ server = Process(target=app.run)
 history = ''
 firstFrame = None
 motion = False
-running = False
+killDur = False
 
 plates = pd.DataFrame(columns=['Time', 'Plates'])
 
@@ -195,6 +195,10 @@ while True:
             history = result[0][1]
 
         except Exception as e:
+            if killDur >= 15:
+                exit()
+            else:
+                killDur += 1
             print("No Plate Found ")
 
 video.release()
