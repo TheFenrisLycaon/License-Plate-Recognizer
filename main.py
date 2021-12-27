@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 from difflib import SequenceMatcher
 from multiprocessing import Process
 
@@ -10,9 +9,7 @@ import imutils
 import numpy as np
 import pandas as pd
 import requests
-import time
 from flask import Flask, Response, render_template
-from matplotlib import pyplot as plt
 
 from private.secrets import KEY
 
