@@ -14,7 +14,7 @@ import time
 from flask import Flask, Response, render_template
 from matplotlib import pyplot as plt
 
-from private.illuminati import KEY
+from private.secrets import KEY
 
 app = Flask(__name__)
 

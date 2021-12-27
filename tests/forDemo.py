@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 
 import cv2
 import easyocr
-from private import illuminati as illuminati
+from private import secrets
 import imutils
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ def sms(number: list, link: str):
 
     payload = f"sender_id=FSTSMS&message={link}&language=english&route=q&numbers={','.join(number)}"
 
-    headers = {'authorization': illuminati.KEY,
+    headers = {'authorization': secrets.KEY,
                'Content-Type': "application/x-www-form-urlencoded", 'Cache-Control': "no-cache", }
 
     response = requests.request("POST", url, data=payload, headers=headers)
