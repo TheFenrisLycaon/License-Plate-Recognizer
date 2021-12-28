@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from difflib import SequenceMatcher
 from multiprocessing import Process
 
@@ -73,9 +74,9 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-global video, img
+global video, frame
 
-video = cv2.VideoCapture('Data/test01.mp4')
+video = cv2.VideoCapture('Data/Deploy02.mp4')
 
 if (video.isOpened() == False):
     print("Error opening video file")
@@ -86,10 +87,8 @@ __DATABASE__ = pd.read_csv('Out/data.csv')
 __RESULTS__ = pd.read_csv('Out/results.csv')
 
 server = Process(target=app.run)
-
-history = ''
 firstFrame = None
-motion = False
+history = ''
 killDur = 0
 running = False
 
@@ -98,11 +97,15 @@ plates = pd.DataFrame(columns=['Time', 'Plates'])
 print("Reading camera feed !")
 while True:
     ret, img = video.read()
+    frame = img
+    h, w, c = img.shape
+    img = img[:10*h//15, w//3:2*w//3]
+    motion = False
 
-    # if ret == True:
-    #     cv2.imshow('Frame', img)
-    #     if cv2.waitKey(25) & 0xFF == ord('q'):
-    #         break
+    if ret == True:
+        cv2.imshow('Frame', img)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -111,26 +114,24 @@ while True:
         continue
 
     delta = cv2.absdiff(firstFrame, gray)
-    thresh = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-    thresh = cv2.dilate(thresh, None, iterations=2)
-    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-                            cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
+    thresh = cv2.threshold(delta, 30, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.dilate(thresh, None, iterations=5)
+    cnts, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+                               cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = imutils.grab_contours(cnts)
 
     # NOTE : Uncomment to see input video
-    if ret == True:
-        cv2.imshow('Gray', gray)
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break
+    # if ret == True:
+    #     cv2.imshow('Gray', gray)
+    #     if cv2.waitKey(25) & 0xFF == ord('q'):
+    #         break
 
     # print("Waiting for motion...")
     for c in cnts:
-
-        if cv2.contourArea(c) < 1000:
-            motion = False
+        if cv2.contourArea(c) <= 75000:
             continue
-        else:
-            motion = True
+
+        motion = True
 
     if motion:
         print("Motion Triggered...\n")
@@ -153,6 +154,7 @@ while True:
                 break
 
         mask = np.zeros(gray.shape, np.uint8)
+
         try:
             new_image = cv2.drawContours(mask, [location], 0, 255, -1)
             new_image = cv2.bitwise_and(img, img, mask=mask)
@@ -173,11 +175,15 @@ while True:
             pass
 
         cropped_image = gray[x1:x2+1, y1:y2+1]
+        cv2.imwrite(f'./Out/{datetime.now()}.jpg', cropped_image)
 
-        reader = easyocr.Reader(['en'])
+        reader = easyocr.Reader(['en'], gpu=False)
         result = reader.readtext(cropped_image)
         try:
-            plate = result[0][1]
+            plate = result[-1][1][-4:]
+
+            if len(plate) < 4:
+                continue
 
             print("Plate found ::\t", plate, '\n')
 
@@ -197,7 +203,18 @@ while True:
             history = result[0][1]
 
         except Exception as e:
-            print("No Plate Found ")
+            print(e)
+            if killDur >= 15:
+                quit()
+            elif running:
+                if result == []:
+                    killDur += 1
+            else:
+                pass
+
+        if firstFrame is None:
+            firstFrame = gray
+            continue
 
 video.release()
 cv2.destroyAllWindows()
