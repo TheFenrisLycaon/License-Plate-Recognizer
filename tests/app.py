@@ -6,7 +6,7 @@ app = Flask(__name__)
 # camera = cv2.VideoCapture(
 #     'http://admin:v1ps*123@202.61.120.78:82/ISAPI/Streaming/channels/102/httpPreview')
 
-camera = cv2.VideoCapture('test00.mp4')
+camera = cv2.VideoCapture('https://www.youtube.com/watch?v=gHKPImTbzMc')
 
 
 def gen_frames():
