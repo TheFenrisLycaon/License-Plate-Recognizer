@@ -95,7 +95,7 @@ def getOCR(plate: np.ndarray) -> List:
     return result
 
 
-net = cv2.dnn.readNet('./Data/plates-ssd.xml', './Data/plates-ssd.bin')
+net = cv2.dnn.readNet('./Data/bike.xml', './Data/bike.bin')
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
 video = cv2.VideoCapture('Data/Deploy02.mp4')
@@ -108,7 +108,7 @@ firstFrame = None
 history = ''
 killDur = 0
 running = False
-
+result = []
 plates = pd.DataFrame(columns=['Time', 'Plates'])
 
 print("Reading camera feed !")
@@ -131,14 +131,16 @@ while True:
     motion, location = getLoc(out)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    result = getOCR(img)
-
     if motion:
         cv2.rectangle(img, location[0], location[1], color=(0, 255, 0))
         cv2.imshow("Output", img)
+        cropped_img = img[location[0][0]: location[0]
+                          [1], location[1][0]: location[1][1]]
 
         #! CHANGED. USING HARDCODED FOR TESTING
-        # result = getOCR(img)
+        if not result:
+            result = getOCR(cropped_img)
+
         try:
             plate = result[0]
 
@@ -150,6 +152,7 @@ while True:
                 history = plate
                 print("Sending...")
                 # sms(getInfo(plate))
+
                 app.run(debug=False, host='127.0.0.1', port=5000)
                 running = True
 
@@ -162,10 +165,6 @@ while True:
                     killDur += 1
             else:
                 pass
-
-    #     if firstFrame is None:
-    #         firstFrame = gray
-    #         continue
 
 video.release()
 cv2.destroyAllWindows()

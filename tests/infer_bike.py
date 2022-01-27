@@ -2,7 +2,7 @@ import cv2
 
 
 # Load the model
-net = cv2.dnn.readNet('OCR/models/ssd_mobilenet.xml', 'OCR/models/ssd_mobilenet.bin')
+net = cv2.dnn.readNet('../Data/bike.xml', '../Data/bike.bin')
 
 # Specify target device
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
