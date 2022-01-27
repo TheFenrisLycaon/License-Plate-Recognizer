@@ -4,7 +4,10 @@ from multiprocessing import Process
 from typing import List
 
 import cv2
+<<<<<<< HEAD
 import easyocr
+=======
+>>>>>>> ocr-fix
 import numpy as np
 import pandas as pd
 import requests
@@ -93,11 +96,18 @@ def getOCR(plate: np.ndarray) -> List:
     # result = (OCR.license_plate_ocr(plate, ocr_model_xml,
     #       ocr_model_bin, detection_threshold))
     result = ['BR01AN3476']
+<<<<<<< HEAD
     # print(result)
     return result
 
 
 net = cv2.dnn.readNet('./Data/plates-ssd.xml', './Data/plates-ssd.bin')
+=======
+    return result
+
+
+net = cv2.dnn.readNet('./Data/bike.xml', './Data/bike.bin')
+>>>>>>> ocr-fix
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
 video = cv2.VideoCapture('Data/Deploy02.mp4')
@@ -136,7 +146,12 @@ while True:
     if motion:
         cv2.rectangle(img, location[0], location[1], color=(0, 255, 0))
         cv2.imshow("Output", img)
+<<<<<<< HEAD
         cropped_img = img[location[0][0] : location[0][1], location[1][0] : location[1][1]]
+=======
+        cropped_img = img[location[0][0]: location[0]
+                          [1], location[1][0]: location[1][1]]
+>>>>>>> ocr-fix
 
         #! CHANGED. USING HARDCODED FOR TESTING
         if not result:
