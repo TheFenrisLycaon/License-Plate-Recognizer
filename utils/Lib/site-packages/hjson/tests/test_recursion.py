@@ -2,18 +2,20 @@ from unittest import TestCase
 
 import hjson as json
 
+
 class JSONTestObject:
     pass
 
 
 class RecursiveJSONEncoder(json.JSONEncoder):
     recurse = False
+
     def default(self, o):
         if o is JSONTestObject:
             if self.recurse:
                 return [JSONTestObject]
             else:
-                return 'JSONTestObject'
+                return "JSONTestObject"
         return json.JSONEncoder.default(o)
 
 
