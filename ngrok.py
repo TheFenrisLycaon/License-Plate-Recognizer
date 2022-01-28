@@ -30,7 +30,7 @@ def index():
 
 
 global video, frame
-video = cv2.VideoCapture('Data/Deploy02.mp4')
+video = cv2.VideoCapture('http://182.65.247.87:8082/stream170')
 
 if (video.isOpened() == False):
     print("Error opening video file")
