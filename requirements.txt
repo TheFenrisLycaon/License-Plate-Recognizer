@@ -1,8 +1,0 @@
-opencv-python
-imutils
-numpy
-pandas
-requests
-flask
-matplotlib
-zappa
