@@ -80,10 +80,10 @@ def getOCR(plate: np.ndarray) -> List:
     return result
 
 
-net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
-net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+# net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
+# net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
-video = cv2.VideoCapture("http://182.65.247.87:8081/stream169")
+video = cv2.VideoCapture("rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101")
 
 if video.isOpened() == False:
     print("Error opening video file")
