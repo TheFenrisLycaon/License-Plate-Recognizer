@@ -13,16 +13,15 @@ def hello():
 
 
 if __name__ == "__main__":
-  app.run()
+    app.run()
 
-  # os.system("curl  http://localhost:4040/api/tunnels > tunnels.json")
+    # os.system("curl  http://localhost:4040/api/tunnels > tunnels.json")
 
-  # with open('tunnels.json') as data_file:
-  #     datajson = json.load(data_file)
+    # with open('tunnels.json') as data_file:
+    #     datajson = json.load(data_file)
 
+    # msg = "ngrok URL's: \n"
+    # for i in datajson['tunnels']:
+    #   msg = msg + i['public_url'] + '\n'
 
-  # msg = "ngrok URL's: \n"
-  # for i in datajson['tunnels']:
-  #   msg = msg + i['public_url'] + '\n'
-
-  # print(msg)
+    # print(msg)

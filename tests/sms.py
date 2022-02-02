@@ -18,16 +18,20 @@ def sms(number: list, link: str):
 
     payload = f"sender_id=FSTSMS&message={link}&language=english&route=q&numbers={','.join(number)}"
 
-    headers = {'authorization': secrets.KEY,
-               'Content-Type': "application/x-www-form-urlencoded", 'Cache-Control': "no-cache", }
+    headers = {
+        "authorization": secrets.KEY,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache",
+    }
 
     response = requests.request("POST", url, data=payload, headers=headers)
 
-    return (response.text)
+    return response.text
 
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
+
 
 # video = cv2.VideoCapture('Data/test (1).mp4')
 
