@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-from multiprocessing import Process
-=======
->>>>>>> main
 from typing import List
 
 import cv2
@@ -20,27 +16,7 @@ __RESULTS__ = pd.read_csv("Out/results.csv")
 app = Flask(__name__)
 
 
-<<<<<<< HEAD
-@app.route('/')
-=======
-def gen_frames():
-    while True:
-        success, frame = video.read()
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode(".jpg", frame)
-            frame = buffer.tobytes()
-            yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
-
-
-@app.route("/video_feed")
-def video_feed():
-    return Response(gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
-
-
 @app.route("/")
->>>>>>> main
 def index():
     """Video streaming home page."""
     return render_template("index.html")
@@ -66,17 +42,6 @@ def sms(number: list, link: str):
 def getInfo(plate: str) -> List:
     """Returns the contact information as per the database"""
     # TODO :: Converted conInfo to a list for testing and demo. Change it to string and pass thru the SMS in a list in PROD
-<<<<<<< HEAD
-    # if plate in plate in __DATABASE__.Plate.to_string():
-    #     conInfo = __DATABASE__.iloc[np.where(
-    #         __DATABASE__['Plate'] == plate)].Contact.to_string(index=False)
-    # else:
-    #     print("Database entry doesn't exist")
-    #     conInfo = []
-
-    # #! HARDCODED AS OF NOW CHANGE IN PRODUCTION
-    conInfo = ['9445386095', '9123415629']
-=======
     if plate in plate in __DATABASE__.Plate.to_string():
         conInfo = __DATABASE__.iloc[
             np.where(__DATABASE__["Plate"] == plate)
@@ -87,7 +52,6 @@ def getInfo(plate: str) -> List:
 
     #! HARDCODED AS OF NOW CHANGE IN PRODUCTION
     conInfo = ["9445386095", "9123415629"]
->>>>>>> main
     return conInfo
 
 
@@ -119,11 +83,7 @@ def getOCR(plate: np.ndarray) -> List:
 net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
-<<<<<<< HEAD
-video = cv2.VideoCapture('http://182.65.247.87:8081/stream169')
-=======
-video = cv2.VideoCapture("Data/Deploy02.mp4")
->>>>>>> main
+video = cv2.VideoCapture("http://182.65.247.87:8081/stream169")
 
 if video.isOpened() == False:
     print("Error opening video file")
