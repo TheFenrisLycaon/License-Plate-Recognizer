@@ -22,9 +22,26 @@ def index():
     return render_template("index.html")
 
 
+import urllib.parse
+import urllib.request
+
+
+def sendSMS(apikey, numbers, sender, message):
+    params = {
+        "apikey": secrets.LOCAL,
+        "numbers": numbers,
+        "message": message,
+        "sender": sender,
+    }
+    f = urllib.request.urlopen(
+        "https://api.textlocal.in/send/?" + urllib.parse.urlencode(params)
+    )
+    return (f.read(), f.code)
+
+
 def sms(number: list, link: str):
     """Sends the link to client on the given number"""
-    url = "https://www.fast2sms.com/dev/bulkV2"
+    url = "https://api.textlocal.in/send/"
 
     payload = f"sender_id=FSTSMS&message={link}&language=english&route=q&numbers={','.join(number)}"
 
@@ -83,7 +100,9 @@ def getOCR(plate: np.ndarray) -> List:
 # net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
 # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
-video = cv2.VideoCapture("rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101")
+video = cv2.VideoCapture(
+    "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
+)
 
 if video.isOpened() == False:
     print("Error opening video file")
@@ -138,7 +157,7 @@ while True:
                 print("Sending...")
                 # sms(getInfo(plate))
 
-                app.run(debug=False, host="127.0.0.1", port=5000)
+                app.run(debug=False, host="157.35.48.196", port=5000)
                 running = True
 
         except Exception as e:

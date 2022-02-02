@@ -81,7 +81,7 @@ def main(rtsp):
         # Starting new HTTP Server for our stream
         try:
             # killProcess(9090)  # Killing existing HTTP servers to start a new one
-            server = HTTPServer(('127.0.0.1', int(9090)), CamHandler)
+            server = HTTPServer(('192.168.244.43', int(9090)), CamHandler)
             print("Server Started")
             server.serve_forever()
         except Exception as e:
