@@ -1,5 +1,3 @@
-import string
-from datetime import datetime
 from multiprocessing import Process
 from typing import List
 
@@ -7,7 +5,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import requests
-from flask import Flask, Response, render_template
+from flask import Flask, render_template
 
 from private import OCR, secrets
 
@@ -17,6 +15,7 @@ __DATABASE__ = pd.read_csv('Out/data.csv')
 __RESULTS__ = pd.read_csv('Out/results.csv')
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
