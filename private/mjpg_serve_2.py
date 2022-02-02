@@ -6,7 +6,7 @@ import sys
 import time
 
 import cv2
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 capture = None
 global server
@@ -54,7 +54,7 @@ class CamHandler(BaseHTTPRequestHandler):
 
 def killProcess(port):
     try:
-        command = "netstat -ltnp | grep " + str(port)  # linux
+        command = "netstat -tnp | grep " + str(port)  # linux
         # command = "netstat -aon | findstr " + str(port)
         print("Command : ", command)
         c = subprocess.Popen(command, shell=True,
@@ -78,21 +78,21 @@ def main(rtsp):
     # While loop just in case rtsp link returns error
     while(1):
 
-        killProcess(9090)  # Killing existing HTTP servers to start a new one
         # Starting new HTTP Server for our stream
         try:
-            server = HTTPServer(('192.168.1.2', int(9090)), CamHandler)
+            # killProcess(9090)  # Killing existing HTTP servers to start a new one
+            server = HTTPServer(('127.0.0.1', int(9090)), CamHandler)
             print("Server Started")
             server.serve_forever()
         except Exception as e:
             # capture.release()
             # server.socket.close()
             print("Exception in Main", e)
-        killProcess(9090)
+        # killProcess(9090)
 
 
 if __name__ == '__main__':
     try:
-        main(sys.argv[1])  # ("http://182.65.247.87:8082/AST")
+        main('rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101')  # ("http://182.65.247.87:8082/AST")
     except Exception as e:
         print("Exception in calling main..", e)

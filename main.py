@@ -18,24 +18,6 @@ __RESULTS__ = pd.read_csv('Out/results.csv')
 
 app = Flask(__name__)
 
-
-def gen_frames():
-    while True:
-        success, frame = video.read()
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-
-@app.route('/video_feed')
-def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
 @app.route('/')
 def index():
     """Video streaming home page."""
@@ -59,14 +41,14 @@ def sms(number: list, link: str):
 def getInfo(plate: str) -> List:
     '''Returns the contact information as per the database'''
     # TODO :: Converted conInfo to a list for testing and demo. Change it to string and pass thru the SMS in a list in PROD
-    if plate in plate in __DATABASE__.Plate.to_string():
-        conInfo = __DATABASE__.iloc[np.where(
-            __DATABASE__['Plate'] == plate)].Contact.to_string(index=False)
-    else:
-        print("Database entry doesn't exist")
-        conInfo = []
+    # if plate in plate in __DATABASE__.Plate.to_string():
+    #     conInfo = __DATABASE__.iloc[np.where(
+    #         __DATABASE__['Plate'] == plate)].Contact.to_string(index=False)
+    # else:
+    #     print("Database entry doesn't exist")
+    #     conInfo = []
 
-    #! HARDCODED AS OF NOW CHANGE IN PRODUCTION
+    # #! HARDCODED AS OF NOW CHANGE IN PRODUCTION
     conInfo = ['9445386095', '9123415629']
     return conInfo
 
