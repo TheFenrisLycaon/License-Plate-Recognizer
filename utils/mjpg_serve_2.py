@@ -20,25 +20,26 @@ class CamHandler(BaseHTTPRequestHandler):
         try:
             self.send_response(200)
             self.send_header(
-                'Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
+                "Content-type", "multipart/x-mixed-replace; boundary=--jpgboundary"
+            )
             self.end_headers()
             capture = cv2.VideoCapture(rtsplink)
             print("client connected")
-            while(capture.isOpened()):
+            while capture.isOpened():
                 try:
                     rc, img = capture.read()
-                    if (rc == True):
+                    if rc == True:
                         imgRGB = img
                         # cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                         # imgRGB = cv2.resize(imgRGB,(1060,460))
                         imgRGB = cv2.resize(imgRGB, (640, 360))
                         r, buf = cv2.imencode(".jpg", imgRGB)
                         self.wfile.write("--jpgboundary\r\n")
-                        self.send_header('Content-type', 'image/jpeg')
-                        self.send_header('Content-length', str(len(buf)))
+                        self.send_header("Content-type", "image/jpeg")
+                        self.send_header("Content-length", str(len(buf)))
                         self.end_headers()
                         self.wfile.write(bytearray(buf))
-                        self.wfile.write('\r\n')
+                        self.wfile.write("\r\n")
                         # time.sleep(0.005)
                     else:
                         continue
@@ -57,11 +58,12 @@ def killProcess(port):
         command = "netstat -tnp | grep " + str(port)  # linux
         # command = "netstat -aon | findstr " + str(port)
         print("Command : ", command)
-        c = subprocess.Popen(command, shell=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        c = subprocess.Popen(
+            command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         stdout, stderr = c.communicate()
         # Getting process id of the existing HTTP Server process
-        pid = int(stdout.decode().strip().split(' ')[-1].split('/')[0])
+        pid = int(stdout.decode().strip().split(" ")[-1].split("/")[0])
         print(pid)
         os.kill(pid, signal.SIGTERM)
         print("process killed")
@@ -76,12 +78,12 @@ def main(rtsp):
     global capture
     rtsplink = rtsp
     # While loop just in case rtsp link returns error
-    while(1):
+    while 1:
 
         # Starting new HTTP Server for our stream
         try:
             # killProcess(9090)  # Killing existing HTTP servers to start a new one
-            server = HTTPServer(('192.168.244.43', int(9090)), CamHandler)
+            server = HTTPServer(("192.168.244.43", int(9090)), CamHandler)
             print("Server Started")
             server.serve_forever()
         except Exception as e:
@@ -91,8 +93,11 @@ def main(rtsp):
         # killProcess(9090)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
-        main('rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101')  # ("http://182.65.247.87:8082/AST")
+        # main("http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg")  #
+        main(
+            "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
+        )  # ("http://182.65.247.87:8082/AST")
     except Exception as e:
         print("Exception in calling main..", e)
