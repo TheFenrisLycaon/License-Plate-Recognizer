@@ -83,7 +83,7 @@ def main(rtsp):
         # Starting new HTTP Server for our stream
         try:
             # killProcess(9090)  # Killing existing HTTP servers to start a new one
-            server = HTTPServer(("192.168.244.43", int(9090)), CamHandler)
+            server = HTTPServer(("127.0.0.1", int(9090)), CamHandler)
             print("Server Started")
             server.serve_forever()
         except Exception as e:
@@ -97,7 +97,8 @@ if __name__ == "__main__":
     try:
         # main("http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg")  #
         main(
+            # "http://182.65.247.87:8082/AST"
             "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
-        )  # ("http://182.65.247.87:8082/AST")
+        )
     except Exception as e:
         print("Exception in calling main..", e)

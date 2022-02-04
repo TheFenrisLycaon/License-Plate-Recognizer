@@ -1,10 +1,13 @@
+import subprocess
+import time
+import urllib.parse
+import urllib.request
 from typing import List
 
 import cv2
 import numpy as np
 import pandas as pd
 import requests
-from flask import Flask, render_template
 
 from private import OCR, secrets
 
@@ -13,20 +16,11 @@ print("Reading Database")
 __DATABASE__ = pd.read_csv("Out/data.csv")
 __RESULTS__ = pd.read_csv("Out/results.csv")
 
-app = Flask(__name__)
+# subprocess.run("initial.bat", shell=True)
 
-
-@app.route("/")
-def index():
-    """Video streaming home page."""
-    return render_template("index.html")
-
-
-import urllib.parse
-import urllib.request
-
-
-def sendSMS(apikey, numbers, sender, message):
+def sendSMS(numbers, sender, message):
+    """Sends SMS using TEXTLOCAL"""
+    #! Currently not working for unknown resaons.
     params = {
         "apikey": secrets.LOCAL,
         "numbers": numbers,
@@ -41,6 +35,7 @@ def sendSMS(apikey, numbers, sender, message):
 
 def sms(number: list, link: str):
     """Sends the link to client on the given number"""
+    # TODO : To be upgrded to a new API once finalized.
     url = "https://api.textlocal.in/send/"
 
     payload = f"sender_id=FSTSMS&message={link}&language=english&route=q&numbers={','.join(number)}"
@@ -59,13 +54,13 @@ def sms(number: list, link: str):
 def getInfo(plate: str) -> List:
     """Returns the contact information as per the database"""
     # TODO :: Converted conInfo to a list for testing and demo. Change it to string and pass thru the SMS in a list in PROD
-    if plate in plate in __DATABASE__.Plate.to_string():
-        conInfo = __DATABASE__.iloc[
-            np.where(__DATABASE__["Plate"] == plate)
-        ].Contact.to_string(index=False)
-    else:
-        print("Database entry doesn't exist")
-        conInfo = []
+    # if plate in plate in __DATABASE__.Plate.to_string():
+    #     conInfo = __DATABASE__.iloc[
+    #         np.where(__DATABASE__["Plate"] == plate)
+    #     ].Contact.to_string(index=False)
+    # else:
+    #     print("Database entry doesn't exist")
+    #     conInfo = []
 
     #! HARDCODED AS OF NOW CHANGE IN PRODUCTION
     conInfo = ["9445386095", "9123415629"]
@@ -100,10 +95,12 @@ def getOCR(plate: np.ndarray) -> List:
 # net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
 # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
-video = cv2.VideoCapture(
-    "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
-)
 
+#! CHANGE LIVE LINKS
+video = cv2.VideoCapture(
+    "http://182.65.247.87:8082/AST"
+)
+time.sleep(1)
 if video.isOpened() == False:
     print("Error opening video file")
 
@@ -127,11 +124,11 @@ while True:
         if cv2.waitKey(25) & 0xFF == ord("q"):
             break
 
-    blob = cv2.dnn.blobFromImage(img, size=(304, 192), ddepth=cv2.CV_8U)
-    net.setInput(blob)
-    out = net.forward()
+    # blob = cv2.dnn.blobFromImage(img, size=(304, 192), ddepth=cv2.CV_8U)
+    # net.setInput(blob)
+    # out = net.forward()
 
-    motion, location = getLoc(out)
+    motion, location = getLoc(img)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     if motion:
@@ -155,15 +152,25 @@ while True:
             if history != plate:
                 history = plate
                 print("Sending...")
-                # sms(getInfo(plate))
+                sms(getInfo(plate))
+                # The following line is for UNIX systems on which we'll most linkely be deploying. Uncomment to test.
+                # app = subprocess.Popen("python2 ./utils/mjpg_serve_2.py", shell=True)
 
-                app.run(debug=False, host="157.35.48.196", port=5000)
+                # On conda defined environments, a different approach is followed.
+                # Uncomment the following line in production or while testing...
+                app = subprocess.Popen(
+                    "conda activate arima && python ./utils/mjpg_serve_2.py",
+                    shell=True,
+                )
+
+                # Starts the ngrok process
+                ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
                 running = True
 
         except Exception as e:
             print(e)
             if killDur >= 15:
-                quit()
+                ngrok.terminate()
             elif running:
                 if plate == "":
                     killDur += 1
