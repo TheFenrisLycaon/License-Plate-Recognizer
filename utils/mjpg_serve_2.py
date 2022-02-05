@@ -1,8 +1,6 @@
-#!/usr/bin/python
 import os
 import signal
 import subprocess
-import sys
 import time
 
 import cv2
@@ -98,7 +96,8 @@ if __name__ == "__main__":
         # main("http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg")  #
         main(
             # "http://182.65.247.87:8082/AST"
-            "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
+            # "rtsp://admin:v1ps@123@202.61.120.78:5544/Streaming/Channels/101"
+            "D://A//Deploy//Data//Deploy02.mp4"
         )
     except Exception as e:
         print("Exception in calling main..", e)

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from private import OCR, secrets
+from private import secrets
 
 print("Reading Database")
 
@@ -68,20 +68,6 @@ def getInfo(plate: str) -> List:
     return conInfo
 
 
-def getLoc(out: np.ndarray) -> tuple():
-    for detection in out.reshape(-1, 7):
-        confidence = float(detection[2])
-        xmin = int(detection[3] * img.shape[1])
-        ymin = int(detection[4] * img.shape[0])
-        xmax = int(detection[5] * img.shape[1])
-        ymax = int(detection[6] * img.shape[0])
-
-        if confidence > 0.3:
-            return True, [[xmin, xmax], [ymin, ymax]]
-
-        return False, [[]]
-
-
 def getOCR(plate: np.ndarray) -> List:
     # ocr_model_xml = "./Data/OCR.xml"
     # ocr_model_bin = "./Data/OCR.bin"
@@ -97,8 +83,8 @@ def getLink():
     pass
 
 
-# net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
-# net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+net = cv2.dnn.readNet("./models/plate.xml", "./models/plate.bin")
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 global video, frame
 
 #! CHANGE LIVE LINKS
@@ -113,6 +99,7 @@ killDur = 0
 running = False
 result = []
 plates = pd.DataFrame(columns=["Time", "Plates"])
+ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
 
 print("Reading camera feed !")
 while True:
@@ -127,27 +114,36 @@ while True:
         if cv2.waitKey(25) & 0xFF == ord("q"):
             break
 
-    # blob = cv2.dnn.blobFromImage(img, size=(304, 192), ddepth=cv2.CV_8U)
-    # net.setInput(blob)
-    # out = net.forward()
+    blob = cv2.dnn.blobFromImage(frame, ddepth=cv2.CV_8U)
+    net.setInput(blob)
+    out = net.forward()
+    location = []
 
-    motion, location = getLoc(img)
+    for detection in out.reshape(-1, 7):
+        # print(detection[1])
+        confidence = float(detection[2])
+        xmin = int(detection[3] * frame.shape[1])
+        ymin = int(detection[4] * frame.shape[0])
+        xmax = int(detection[5] * frame.shape[1])
+        ymax = int(detection[6] * frame.shape[0])
+
+        if confidence > 0.3:
+            location.append([[xmin, ymin], [ymin, ymax]])
+            motion = True
+            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color=(0, 255, 0))
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     if motion:
-        cv2.rectangle(img, location[0], location[1], color=(0, 255, 0))
-        cv2.imshow("Output", img)
+        # cv2.imshow("Output", img)
         cropped_img = img[
-            location[0][0] : location[0][1], location[1][0] : location[1][1]
+            location[0][0][0] : location[0][0][1], location[0][1][0] : location[0][1][1]
         ]
 
         #! CHANGED. USING HARDCODED FOR TESTING
         if not result:
             result = getOCR(cropped_img)
 
-        if not running:
-            ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
-            
         plate = ""
         try:
             plate = result[0]
@@ -168,7 +164,7 @@ while True:
                 # Uncomment the following line in production or while testing...
                 if not running:
                     app = subprocess.Popen(
-                        "conda activate arima && python ./utils/mjpg_serve_2.py",
+                        "conda activate arima &&  python ./utils/mjpg_serve_2.py",
                         shell=True,
                     )
                 running = True
@@ -184,5 +180,7 @@ while True:
                 pass
 
 video.release()
+ngrok.kill()
+ngrok.terminate()
 cv2.destroyAllWindows()
 __RESULTS__.to_csv("Out/results.csv")
