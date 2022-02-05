@@ -145,7 +145,9 @@ while True:
         if not result:
             result = getOCR(cropped_img)
 
-        ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
+        if not running:
+            ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
+            
         plate = ""
         try:
             plate = result[0]
