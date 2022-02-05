@@ -18,6 +18,7 @@ __RESULTS__ = pd.read_csv("Out/results.csv")
 
 # subprocess.run("initial.bat", shell=True)
 
+
 def sendSMS(numbers, sender, message):
     """Sends SMS using TEXTLOCAL"""
     #! Currently not working for unknown resaons.
@@ -67,7 +68,7 @@ def getInfo(plate: str) -> List:
     return conInfo
 
 
-def getLoc(out: np.ndarray) -> List[List]:
+def getLoc(out: np.ndarray) -> tuple():
     for detection in out.reshape(-1, 7):
         confidence = float(detection[2])
         xmin = int(detection[3] * img.shape[1])
@@ -82,14 +83,18 @@ def getLoc(out: np.ndarray) -> List[List]:
 
 
 def getOCR(plate: np.ndarray) -> List:
-    ocr_model_xml = "./Data/OCR.xml"
-    ocr_model_bin = "./Data/OCR.bin"
-    detection_threshold = 0.4
-    result = OCR.license_plate_ocr(
-        plate, ocr_model_xml, ocr_model_bin, detection_threshold
-    )
+    # ocr_model_xml = "./Data/OCR.xml"
+    # ocr_model_bin = "./Data/OCR.bin"
+    # detection_threshold = 0.4
+    # result = OCR.license_plate_ocr(
+    #     plate, ocr_model_xml, ocr_model_bin, detection_threshold
+    # )
     result = ["BR01AN3476"]
     return result
+
+
+def getLink():
+    pass
 
 
 # net = cv2.dnn.readNet("./Data/bike.xml", "./Data/bike.bin")
@@ -97,9 +102,7 @@ def getOCR(plate: np.ndarray) -> List:
 global video, frame
 
 #! CHANGE LIVE LINKS
-video = cv2.VideoCapture(
-    "http://182.65.247.87:8082/AST"
-)
+video = cv2.VideoCapture("./Data/Deploy02.mp4")
 time.sleep(1)
 if video.isOpened() == False:
     print("Error opening video file")
@@ -142,6 +145,8 @@ while True:
         if not result:
             result = getOCR(cropped_img)
 
+        ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
+        plate = ""
         try:
             plate = result[0]
 
@@ -152,19 +157,17 @@ while True:
             if history != plate:
                 history = plate
                 print("Sending...")
-                sms(getInfo(plate))
+                sms(getInfo(plate), getLink())
                 # The following line is for UNIX systems on which we'll most linkely be deploying. Uncomment to test.
                 # app = subprocess.Popen("python2 ./utils/mjpg_serve_2.py", shell=True)
 
                 # On conda defined environments, a different approach is followed.
                 # Uncomment the following line in production or while testing...
-                app = subprocess.Popen(
-                    "conda activate arima && python ./utils/mjpg_serve_2.py",
-                    shell=True,
-                )
-
-                # Starts the ngrok process
-                ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
+                if not running:
+                    app = subprocess.Popen(
+                        "conda activate arima && python ./utils/mjpg_serve_2.py",
+                        shell=True,
+                    )
                 running = True
 
         except Exception as e:
