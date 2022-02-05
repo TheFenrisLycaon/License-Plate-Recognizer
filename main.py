@@ -157,8 +157,9 @@ while True:
             if history != plate:
                 history = plate
                 print("Sending...")
-                sms(getInfo(plate), getLink())
+                # sms(getInfo(plate), getLink())
                 # The following line is for UNIX systems on which we'll most linkely be deploying. Uncomment to test.
+                # if not running:
                 # app = subprocess.Popen("python2 ./utils/mjpg_serve_2.py", shell=True)
 
                 # On conda defined environments, a different approach is followed.
