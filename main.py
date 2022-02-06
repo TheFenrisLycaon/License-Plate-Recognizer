@@ -99,7 +99,9 @@ killDur = 0
 running = False
 result = []
 plates = pd.DataFrame(columns=["Time", "Plates"])
-ngrok = subprocess.Popen("ngrok http -region in http://localhost:9090")
+
+ngrok = subprocess.Popen(["ngrok", "http", "-region", "in", "http://localhost:9090"])
+
 
 print("Reading camera feed !")
 while True:
