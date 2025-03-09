@@ -1,4 +1,4 @@
-# AST
+# License Plate Recognizer
 
 ## Steps
 
