@@ -77,7 +77,6 @@ def main(rtsp):
     rtsplink = rtsp
     # While loop just in case rtsp link returns error
     while 1:
-
         # Starting new HTTP Server for our stream
         try:
             # killProcess(9090)  # Killing existing HTTP servers to start a new one

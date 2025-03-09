@@ -23,7 +23,7 @@ def gen_frames():
         else:
             ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
-            yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
 @app.route("/video_feed")
@@ -127,7 +127,6 @@ while True:
 
     # print("Waiting for motion...")
     for c in cnts:
-
         if cv2.contourArea(c) <= 100:
             motion = False
             continue
